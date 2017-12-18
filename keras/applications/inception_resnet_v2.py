@@ -258,13 +258,13 @@ def InceptionResNetV2(include_top=True,
             img_input = input_tensor
 
     # Stem block: 35 x 35 x 192
-    x = conv2d_bn(img_input, 32, 3, strides=2, padding='valid')
-    x = conv2d_bn(x, 32, 3, padding='valid')
+    x = conv2d_bn(img_input, 32, 3, strides=2, padding='same')
+    x = conv2d_bn(x, 32, 3, padding='same')
     x = conv2d_bn(x, 64, 3)
-    x = MaxPooling2D(3, strides=2)(x)
-    x = conv2d_bn(x, 80, 1, padding='valid')
-    x = conv2d_bn(x, 192, 3, padding='valid')
-    x = MaxPooling2D(3, strides=2)(x)
+    x = MaxPooling2D(3, strides=2, padding='same')(x)
+    x = conv2d_bn(x, 80, 1, padding='same')
+    x = conv2d_bn(x, 192, 3, padding='same')
+    x = MaxPooling2D(3, strides=2, padding='same')(x)
 
     # Mixed 5b (Inception-A block): 35 x 35 x 320
     branch_0 = conv2d_bn(x, 96, 1)
@@ -287,11 +287,11 @@ def InceptionResNetV2(include_top=True,
                                    block_idx=block_idx)
 
     # Mixed 6a (Reduction-A block): 17 x 17 x 1088
-    branch_0 = conv2d_bn(x, 384, 3, strides=2, padding='valid')
+    branch_0 = conv2d_bn(x, 384, 3, strides=2, padding='same')
     branch_1 = conv2d_bn(x, 256, 1)
     branch_1 = conv2d_bn(branch_1, 256, 3)
-    branch_1 = conv2d_bn(branch_1, 384, 3, strides=2, padding='valid')
-    branch_pool = MaxPooling2D(3, strides=2, padding='valid')(x)
+    branch_1 = conv2d_bn(branch_1, 384, 3, strides=2, padding='same')
+    branch_pool = MaxPooling2D(3, strides=2, padding='same')(x)
     branches = [branch_0, branch_1, branch_pool]
     x = Concatenate(axis=channel_axis, name='mixed_6a')(branches)
 
@@ -304,13 +304,13 @@ def InceptionResNetV2(include_top=True,
 
     # Mixed 7a (Reduction-B block): 8 x 8 x 2080
     branch_0 = conv2d_bn(x, 256, 1)
-    branch_0 = conv2d_bn(branch_0, 384, 3, strides=2, padding='valid')
+    branch_0 = conv2d_bn(branch_0, 384, 3, strides=2, padding='same')
     branch_1 = conv2d_bn(x, 256, 1)
-    branch_1 = conv2d_bn(branch_1, 288, 3, strides=2, padding='valid')
+    branch_1 = conv2d_bn(branch_1, 288, 3, strides=2, padding='same')
     branch_2 = conv2d_bn(x, 256, 1)
     branch_2 = conv2d_bn(branch_2, 288, 3)
-    branch_2 = conv2d_bn(branch_2, 320, 3, strides=2, padding='valid')
-    branch_pool = MaxPooling2D(3, strides=2, padding='valid')(x)
+    branch_2 = conv2d_bn(branch_2, 320, 3, strides=2, padding='same')
+    branch_pool = MaxPooling2D(3, strides=2, padding='same')(x)
     branches = [branch_0, branch_1, branch_2, branch_pool]
     x = Concatenate(axis=channel_axis, name='mixed_7a')(branches)
 
