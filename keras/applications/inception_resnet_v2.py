@@ -180,7 +180,8 @@ def InceptionResNetV2(include_top=True,
                       input_shape=None,
                       pooling=None,
                       classes=1000,
-                      dropout=0.):
+                      dropout=0.,
+                      only_same_padding=False):
     """Instantiates the Inception-ResNet v2 architecture.
 
     Optionally loads weights pre-trained on ImageNet.
@@ -227,6 +228,9 @@ def InceptionResNetV2(include_top=True,
         dropout: If greater than zero, adds a dropout layer at the end of the
             network like the reference paper, setting this fraction of input
             units to zero. The reference paper used a dropout rate of 0.2.
+        only_same_padding: If set to True, only 'same' padding is used in all
+            network layers, even in places where the reference paper used
+            'valid' padding.
 
     # Returns
         A Keras `Model` instance.
@@ -262,14 +266,16 @@ def InceptionResNetV2(include_top=True,
         else:
             img_input = input_tensor
 
+    selected_padding = 'same' if only_same_padding else 'valid'
+
     # Stem block: 35 x 35 x 192
-    x = conv2d_bn(img_input, 32, 3, strides=2, padding='same')
-    x = conv2d_bn(x, 32, 3, padding='same')
+    x = conv2d_bn(img_input, 32, 3, strides=2, padding=selected_padding)
+    x = conv2d_bn(x, 32, 3, padding=selected_padding)
     x = conv2d_bn(x, 64, 3)
-    x = MaxPooling2D(3, strides=2, padding='same')(x)
-    x = conv2d_bn(x, 80, 1, padding='same')
-    x = conv2d_bn(x, 192, 3, padding='same')
-    x = MaxPooling2D(3, strides=2, padding='same')(x)
+    x = MaxPooling2D(3, strides=2, padding=selected_padding)(x)
+    x = conv2d_bn(x, 80, 1, padding=selected_padding)
+    x = conv2d_bn(x, 192, 3, padding=selected_padding)
+    x = MaxPooling2D(3, strides=2, padding=selected_padding)(x)
 
     # Mixed 5b (Inception-A block): 35 x 35 x 320
     branch_0 = conv2d_bn(x, 96, 1)
@@ -292,11 +298,11 @@ def InceptionResNetV2(include_top=True,
                                    block_idx=block_idx)
 
     # Mixed 6a (Reduction-A block): 17 x 17 x 1088
-    branch_0 = conv2d_bn(x, 384, 3, strides=2, padding='same')
+    branch_0 = conv2d_bn(x, 384, 3, strides=2, padding=selected_padding)
     branch_1 = conv2d_bn(x, 256, 1)
     branch_1 = conv2d_bn(branch_1, 256, 3)
-    branch_1 = conv2d_bn(branch_1, 384, 3, strides=2, padding='same')
-    branch_pool = MaxPooling2D(3, strides=2, padding='same')(x)
+    branch_1 = conv2d_bn(branch_1, 384, 3, strides=2, padding=selected_padding)
+    branch_pool = MaxPooling2D(3, strides=2, padding=selected_padding)(x)
     branches = [branch_0, branch_1, branch_pool]
     x = Concatenate(axis=channel_axis, name='mixed_6a')(branches)
 
@@ -309,13 +315,13 @@ def InceptionResNetV2(include_top=True,
 
     # Mixed 7a (Reduction-B block): 8 x 8 x 2080
     branch_0 = conv2d_bn(x, 256, 1)
-    branch_0 = conv2d_bn(branch_0, 384, 3, strides=2, padding='same')
+    branch_0 = conv2d_bn(branch_0, 384, 3, strides=2, padding=selected_padding)
     branch_1 = conv2d_bn(x, 256, 1)
-    branch_1 = conv2d_bn(branch_1, 288, 3, strides=2, padding='same')
+    branch_1 = conv2d_bn(branch_1, 288, 3, strides=2, padding=selected_padding)
     branch_2 = conv2d_bn(x, 256, 1)
     branch_2 = conv2d_bn(branch_2, 288, 3)
-    branch_2 = conv2d_bn(branch_2, 320, 3, strides=2, padding='same')
-    branch_pool = MaxPooling2D(3, strides=2, padding='same')(x)
+    branch_2 = conv2d_bn(branch_2, 320, 3, strides=2, padding=selected_padding)
+    branch_pool = MaxPooling2D(3, strides=2, padding=selected_padding)(x)
     branches = [branch_0, branch_1, branch_2, branch_pool]
     x = Concatenate(axis=channel_axis, name='mixed_7a')(branches)
 
