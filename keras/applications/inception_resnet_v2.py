@@ -31,6 +31,7 @@ from ..layers import GlobalMaxPooling2D
 from ..layers import Input
 from ..layers import Lambda
 from ..layers import MaxPooling2D
+from ..layers import Dropout
 from ..utils.data_utils import get_file
 from ..engine.topology import get_source_inputs
 from . import imagenet_utils
@@ -178,7 +179,8 @@ def InceptionResNetV2(include_top=True,
                       input_tensor=None,
                       input_shape=None,
                       pooling=None,
-                      classes=1000):
+                      classes=1000,
+                      dropout=0.):
     """Instantiates the Inception-ResNet v2 architecture.
 
     Optionally loads weights pre-trained on ImageNet.
@@ -222,6 +224,9 @@ def InceptionResNetV2(include_top=True,
         classes: optional number of classes to classify images
             into, only to be specified if `include_top` is `True`, and
             if no `weights` argument is specified.
+        dropout: If greater than zero, adds a dropout layer at the end of the
+            network like the reference paper, setting this fraction of input
+            units to zero. The reference paper used a dropout rate of 0.2.
 
     # Returns
         A Keras `Model` instance.
@@ -332,12 +337,16 @@ def InceptionResNetV2(include_top=True,
     if include_top:
         # Classification block
         x = GlobalAveragePooling2D(name='avg_pool')(x)
+        if dropout > 0.:
+            x = Dropout(dropout)(x)
         x = Dense(classes, activation='softmax', name='predictions')(x)
     else:
         if pooling == 'avg':
             x = GlobalAveragePooling2D()(x)
         elif pooling == 'max':
             x = GlobalMaxPooling2D()(x)
+        if dropout > 0.:
+            x = Dropout(dropout)(x)
 
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`
