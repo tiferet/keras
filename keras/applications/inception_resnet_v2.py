@@ -62,7 +62,7 @@ def conv2d_bn(x,
               strides=1,
               padding='same',
               activation='relu',
-              regularization=0.,
+              regularization=None,
               use_bias=False,
               name=None):
     """Utility function to apply conv + BN.
@@ -83,12 +83,13 @@ def conv2d_bn(x,
     # Returns
         Output tensor after applying `Conv2D` and `BatchNormalization`.
     """
+    regularizer = None if (regularization is None or regularization <= 0.) else l2(regularization)
     x = Conv2D(filters,
                kernel_size,
                strides=strides,
                padding=padding,
                use_bias=use_bias,
-               kernel_regularizer=l2(regularization),
+               kernel_regularizer=regularizer,
                name=name)(x)
     if not use_bias:
         bn_axis = 1 if K.image_data_format() == 'channels_first' else 3
@@ -100,7 +101,7 @@ def conv2d_bn(x,
     return x
 
 
-def inception_resnet_block(x, scale, block_type, block_idx, activation='relu', regularization=0.):
+def inception_resnet_block(x, scale, block_type, block_idx, activation='relu', regularization=None):
     """Adds a Inception-ResNet block.
 
     This function builds 3 types of Inception-ResNet blocks mentioned
@@ -188,8 +189,8 @@ def InceptionResNetV2(include_top=True,
                       input_shape=None,
                       pooling=None,
                       classes=1000,
-                      dropout=0.,
-                      regularization=0.,
+                      dropout=None,
+                      regularization=None,
                       only_same_padding=False):
     """Instantiates the Inception-ResNet v2 architecture.
 
@@ -358,7 +359,7 @@ def InceptionResNetV2(include_top=True,
     if include_top:
         # Classification block
         x = GlobalAveragePooling2D(name='avg_pool')(x)
-        if dropout > 0.:
+        if dropout is not None and dropout > 0. and dropout < 1.:
             x = Dropout(dropout)(x)
         x = Dense(classes, activation='softmax', name='predictions')(x)
     else:
@@ -366,7 +367,7 @@ def InceptionResNetV2(include_top=True,
             x = GlobalAveragePooling2D()(x)
         elif pooling == 'max':
             x = GlobalMaxPooling2D()(x)
-        if dropout > 0.:
+        if dropout is not None and dropout > 0. and dropout < 1.:
             x = Dropout(dropout)(x)
 
     # Ensure that the model takes into account
