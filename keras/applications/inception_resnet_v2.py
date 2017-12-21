@@ -359,7 +359,7 @@ def InceptionResNetV2(include_top=True,
     if include_top:
         # Classification block
         x = GlobalAveragePooling2D(name='avg_pool')(x)
-        if dropout is not None and dropout > 0. and dropout < 1.:
+        if dropout is not None and 0. < dropout < 1.:
             x = Dropout(dropout)(x)
         x = Dense(classes, activation='softmax', name='predictions')(x)
     else:
@@ -367,7 +367,7 @@ def InceptionResNetV2(include_top=True,
             x = GlobalAveragePooling2D()(x)
         elif pooling == 'max':
             x = GlobalMaxPooling2D()(x)
-        if dropout is not None and dropout > 0. and dropout < 1.:
+        if dropout is not None and 0. < dropout < 1.:
             x = Dropout(dropout)(x)
 
     # Ensure that the model takes into account
