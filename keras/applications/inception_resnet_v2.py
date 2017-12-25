@@ -283,10 +283,10 @@ def InceptionResNetV2(include_top=True,
     # Stem block: 35 x 35 x 192
     x = conv2d_bn(img_input, 32, 3, strides=2, padding=selected_padding, regularization=regularization)
     x = conv2d_bn(x, 32, 3, padding=selected_padding, regularization=regularization)
-    x = conv2d_bn(x, 64, 3, regularization=regularization)
+    x = conv2d_bn(x, 64, 3, name='conv_stem_3', regularization=regularization)
     x = MaxPooling2D(3, strides=2, padding=selected_padding)(x)
     x = conv2d_bn(x, 80, 1, padding=selected_padding, regularization=regularization)
-    x = conv2d_bn(x, 192, 3, padding=selected_padding, regularization=regularization)
+    x = conv2d_bn(x, 192, 3, padding=selected_padding, name='conv_stem_5', regularization=regularization)
     x = MaxPooling2D(3, strides=2, padding=selected_padding)(x)
 
     # Mixed 5b (Inception-A block): 35 x 35 x 320
