@@ -91,10 +91,10 @@ def conv2d_bn(x,
                use_bias=use_bias,
                kernel_regularizer=regularizer,
                name=name)(x)
-    if not use_bias:
-        bn_axis = 1 if K.image_data_format() == 'channels_first' else 3
-        bn_name = None if name is None else name + '_bn'
-        x = BatchNormalization(axis=bn_axis, scale=False, name=bn_name)(x)
+    # if not use_bias:
+    #     bn_axis = 1 if K.image_data_format() == 'channels_first' else 3
+    #     bn_name = None if name is None else name + '_bn'
+    #     x = BatchNormalization(axis=bn_axis, scale=False, name=bn_name)(x)
     if activation is not None:
         ac_name = None if name is None else name + '_ac'
         x = Activation(activation, name=ac_name)(x)
