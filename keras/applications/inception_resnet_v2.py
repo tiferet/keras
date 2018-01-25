@@ -64,6 +64,7 @@ def conv2d_bn(x,
               activation='relu',
               regularization=None,
               use_bias=False,
+              use_batch_normalization=False,
               name=None):
     """Utility function to apply conv + BN.
 
@@ -77,6 +78,7 @@ def conv2d_bn(x,
         regularization: The L2 weight decay coefficient used in the convolutional
             layers to prevent overfitting. The reference paper uses no regularization.
         use_bias: whether to use a bias in `Conv2D`.
+        use_batch_normalization: Whether to use batch normalization if not using a bias.
         name: name of the ops; will become `name + '_ac'` for the activation
             and `name + '_bn'` for the batch norm layer.
 
@@ -91,10 +93,10 @@ def conv2d_bn(x,
                use_bias=use_bias,
                kernel_regularizer=regularizer,
                name=name)(x)
-    # if not use_bias:
-    #     bn_axis = 1 if K.image_data_format() == 'channels_first' else 3
-    #     bn_name = None if name is None else name + '_bn'
-    #     x = BatchNormalization(axis=bn_axis, scale=False, name=bn_name)(x)
+    if not use_bias and use_batch_normalization:
+        bn_axis = 1 if K.image_data_format() == 'channels_first' else 3
+        bn_name = None if name is None else name + '_bn'
+        x = BatchNormalization(axis=bn_axis, scale=False, name=bn_name)(x)
     if activation is not None:
         ac_name = None if name is None else name + '_ac'
         x = Activation(activation, name=ac_name)(x)
