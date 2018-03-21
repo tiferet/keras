@@ -468,6 +468,13 @@ def _weighted_masked_objective(fn):
 
         # apply sample weighting
         if weights is not None:
+            # # Give lower weight to samples that are currently correctly predicted, so that the gradient will tend to fix
+            # # erroneous predictions rather than increase the certainty of pixels that are already correctly predicted:
+            # decrementation_factor = 0.25  # weights of correctly-predicted samples are multiplied by this factor
+            # categorical_correctness = K.cast(K.equal(K.argmax(y_true, axis=-1), K.argmax(y_pred, axis=-1)), K.floatx())
+            # categorical_correctness *= (decrementation_factor - 1.)
+            # categorical_correctness += 1.  # equals 1 where the prediction was wrong and decrementation_factor where it was right
+            # weights *= categorical_correctness
             # reduce score_array to same ndim as weight array
             ndim = K.ndim(score_array)
             weight_ndim = K.ndim(weights)
@@ -1398,7 +1405,10 @@ class Model(Container):
         output_shapes = []
         for output_shape, loss_fn in zip(self._feed_output_shapes, self._feed_loss_fns):
             if loss_fn is losses.sparse_categorical_crossentropy:
-                output_shapes.append(output_shape[:-1] + (1,))
+                if K.image_data_format() == 'channels_last':
+                    output_shapes.append(output_shape[:-1] + (1,))
+                else:
+                    output_shapes.append((output_shape[0], 1) + output_shape[2:])
             elif (not hasattr(loss_fn, '__name__') or
                   getattr(losses, loss_fn.__name__, None) is None):
                 # If `loss_fn` is not a function (e.g. callable class)
